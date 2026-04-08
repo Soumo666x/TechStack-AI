@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStack AI - Indian Startup Stack Recommender</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --success: #10b981;
+            --bg-dark: #0f172a;
+            --bg-light: #1e293b;
+            --bg-card: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border: #475569;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, #1a1f3a 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .input-section {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        select:hover {
+            border-color: var(--primary);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary);
+            background: var(--bg-light);
+        }
+
+        .results-section {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .results-header {
+            background: var(--bg-light);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .confidence-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            border: 2px solid var(--border);
+        }
+
+        .confidence-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .contrarian-badge {
+            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+            border-color: var(--primary);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-content {
+            color: var(--text-secondary);
+        }
+
+        .tech-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .tech-name {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.05rem;
+        }
+
+        .tech-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .alert {
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            border-left: 4px solid;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger);
+            color: var(--text-primary);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .alert-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .reasoning-box {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .cost-breakdown {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cost-item:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--accent);
+        }
+
+        .reference-card {
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg-card) 100%);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .reference-startup {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .reference-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .reference-link:hover {
+            text-decoration: underline;
+        }
+
+        .reference-insight {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-style: italic;
+            color: var(--text-muted);
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.375rem;
+            top: 0.25rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid var(--bg-dark);
+        }
+
+        .timeline-stage {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-copy {
+            background: var(--success);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+        }
+
+        .alternative-section {
+            background: var(--bg-light);
+            border-radius: 12px;
+            padding: 2rem;
+            border: 2px dashed var(--border);
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 768px) {
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .results-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 TechStack AI</h1>
+            <p class="subtitle">India's Smart Tech Stack Recommender for Startups</p>
+        </header>
+
+        <div class="input-section">
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="stage">Startup Stage</label>
+                    <select id="stage">
+                        <option value="idea">💡 Idea Stage</option>
+                        <option value="mvp">🛠️ MVP / Pre-Seed</option>
+                        <option value="growth">📈 Growth / Series A</option>
+                        <option value="scale">🌍 Scale / Series B+</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="team">Team Size</label>
+                    <select id="team">
+                        <option value="solo">1-5 (Solo/Small)</option>
+                        <option value="medium">6-15 (Medium)</option>
+                        <option value="large">15+ (Large)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="budget">Monthly Budget</label>
+                    <select id="budget">
+                        <option value="low">Low (₹5K - ₹25K)</option>
+                        <option value="medium">Medium (₹25K - ₹1L)</option>
+                        <option value="high">High (₹1L+)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="sector">Sector</label>
+                    <select id="sector">
+                        <option value="fintech">💰 Fintech</option>
+                        <option value="healthtech">🏥 Healthtech</option>
+                        <option value="edtech">📚 Edtech</option>
+                        <option value="saas">☁️ SaaS</option>
+                        <option value="ecommerce">🛒 E-commerce</option>
+                        <option value="ai">🤖 AI/ML</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-primary" onclick="generateRecommendation()">Generate Stack Recommendation</button>
+                <button class="btn-secondary" onclick="resetForm()">Reset</button>
+            </div>
+        </div>
+
+        <div class="results-section" id="results">
+            <!-- Results will be rendered here -->
+        </div>
+    </div>
+
+    <script>
+        // Tech Stack Decision Engine
+        const stackDatabase = [
+            {
+                id: 1,
+                condition: {
+                    stage: 'mvp',
+                    budget: 'low',
+                    sector: 'fintech'
+                },
+                contrarian: true,
+                confidence: 78,
+                stack: {
+                    frontend: { name: 'Firebase Hosting + Vanilla JS', desc: 'No-framework approach for speed' },
+                    backend: { name: 'Firebase Cloud Functions', desc: 'Serverless, instant deployment' },
+                    database: { name: 'Firestore', desc: 'Real-time NoSQL with offline support' },
+                    hosting: { name: 'Firebase + Cloudflare CDN', desc: 'Global edge network' },
+                    auth: { name: 'Firebase Auth + Aadhaar eKYC', desc: 'Built-in auth with compliance' },
+                    payments: { name: 'Razorpay Standard', desc: 'UPI, cards, wallets integration' }
+                },
+                indiaIntegration: {
+                    name: 'Razorpay UPI AutoPay',
+                    desc: 'Recurring payments via UPI mandate',
+                    link: 'https://razorpay.com/docs/payments/upi-autopay/'
+                },
+                reasoning: 'Most fintech MVPs over-engineer with Node.js + PostgreSQL. Firebase lets you ship in 2 weeks instead of 2 months. The vendor lock-in risk is real but acceptable at MVP stage when speed-to-market matters more. You can always migrate later with your learnings.',
+                redFlag: '⚠️ Firebase vendor lock-in and compliance uncertainty for financial data. RBI guidelines prefer on-premise or hybrid solutions. Migration complexity increases exponentially after 10K users.',
+                costBreakdown: [
+                    { item: 'Firebase (Spark Plan)', cost: '₹0' },
+                    { item: 'Razorpay (2% + ₹3/txn)', cost: '₹5,000' },
+                    { item: 'Aadhaar eKYC API', cost: '₹2,000' },
+                    { item: 'SSL + Domain', cost: '₹500' },
+                    { item: 'Total Monthly', cost: '₹7,500' }
+                ],
+                reference: {
+                    startup: 'Jupiter (Early Days)',
+                    link: 'https://engineering.jupiter.money/blog',
+                    insight: 'Used Firebase for first 3 months to validate PMF before migrating to custom backend'
+                },
+                scaling: [
+                    { stage: '0-1K users', desc: 'Firebase free tier handles everything' },
+                    { stage: '1K-10K users', desc: 'Upgrade to Blaze plan (~₹15K/mo), add Cloud CDN' },
+                    { stage: '10K-100K users', desc: 'Migrate to GCP + PostgreSQL, keep Firebase Auth' },
+                    { stage: '100K+ users', desc: 'Multi-region deployment, dedicated compliance team' }
+                ],
+                whyNot: {
+                    rejected: 'Node.js + PostgreSQL + AWS',
+                    reason: 'Takes 6-8 weeks to set up properly with DevOps. At MVP stage, you don\'t know if your idea will work. Firebase lets you fail fast or succeed faster.'
+                },
+                alternative: {
+                    stack: 'Supabase (PostgreSQL) + Next.js',
+                    reason: 'Open-source Firebase alternative with better data portability, but steeper learning curve'
+                }
+            },
+            {
+                id: 2,
+                condition: {
+                    stage: 'growth',
+                    budget: 'high',
+                    sector: 'fintech'
+                },
+                contrarian: false,
+                confidence: 92,
+                stack: {
+                    frontend: { name: 'React + TypeScript', desc: 'Type-safe, scalable UI' },
+                    backend: { name: 'Node.js (NestJS) + Microservices', desc: 'Service-oriented architecture' },
+                    database: { name: 'PostgreSQL (RDS) + Redis', desc: 'ACID compliance + caching' },
+                    hosting: { name: 'AWS (Mumbai Region)', desc: 'Compliance-ready infrastructure' },
+                    auth: { name: 'Auth0 + Aadhaar eKYC', desc: 'Enterprise SSO + KYC' },
+                    payments: { name: 'Razorpay Route + Payment Gateway', desc: 'Split payments & marketplace support' }
+                },
+                indiaIntegration: {
+                    name: 'RBI Account Aggregator',
+                    desc: 'Fetch financial data with user consent',
+                    link: 'https://www.rbi.org.in/Scripts/bs_viewcontent.aspx?Id=3142'
+                },
+                reasoning: 'Growth-stage fintech needs battle-tested architecture. NestJS provides structure for 10+ microservices. PostgreSQL ensures ACID compliance for financial transactions. AWS Mumbai keeps data residency in check for RBI compliance.',
+                redFlag: '⚠️ AWS costs scale non-linearly. Budget ₹1.5L-₹3L/month minimum. Over-engineering risk if team lacks microservices experience. 6-month runway needed for proper implementation.',
+                costBreakdown: [
+                    { item: 'AWS (EC2, RDS, S3, CloudFront)', cost: '₹1,20,000' },
+                    { item: 'Razorpay (1.75% + ₹3/txn)', cost: '₹25,000' },
+                    { item: 'Auth0 Enterprise', cost: '₹15,000' },
+                    { item: 'Monitoring (DataDog/New Relic)', cost: '₹12,000' },
+                    { item: 'SSL, CDN, Domain', cost: '₹3,000' },
+                    { item: 'Total Monthly', cost: '₹1,75,000' }
+                ],
+                reference: {
+                    startup: 'CRED',
+                    link: 'https://stackshare.io/cred/cred',
+                    insight: 'Uses AWS + PostgreSQL + Redis for handling millions of daily transactions with <10ms latency'
+                },
+                scaling: [
+                    { stage: 'Current (100K users)', desc: 'Multi-AZ deployment, auto-scaling enabled' },
+                    { stage: '500K users', desc: 'Add ElasticSearch, move to Kubernetes (EKS)' },
+                    { stage: '1M+ users', desc: 'Multi-region active-active, dedicated DBA team' },
+                    { stage: '5M+ users', desc: 'Custom CDN, blockchain for audit trails' }
+                ],
+                whyNot: {
+                    rejected: 'Monolith on DigitalOcean',
+                    reason: 'Can\'t scale horizontally for fintech compliance. RBI prefers enterprise-grade infrastructure with audit trails. DO lacks India-specific compliance certifications.'
+                },
+                alternative: {
+                    stack: 'GCP (Cloud Run) + Cloud SQL + Firebase',
+                    reason: 'Slightly cheaper than AWS, better serverless support, but less fintech adoption in India'
+                }
+            },
+            {
+                id: 3,
+                condition: {
+                    stage: 'mvp',
+                    budget: 'low',
+                    sector: 'healthtech'
+                },
+                contrarian: true,
+                confidence: 75,
+                stack: {
+                    frontend: { name: 'PHP (Laravel) + Blade Templates', desc: 'Monolithic simplicity' },
+                    backend: { name: 'Laravel API', desc: 'Batteries-included framework' },
+                    database: { name: 'MySQL (Managed)', desc: 'Reliable, cheap, familiar' },
+                    hosting: { name: 'DigitalOcean Droplet (Bangalore)', desc: '₹800/month basic plan' },
+                    auth: { name: 'Laravel Breeze + OTP', desc: 'Built-in auth scaffolding' },
+                    payments: { name: 'Razorpay Standard', desc: 'Doctor consultation payments' }
+                },
+                indiaIntegration: {
+                    name: 'ABDM (Ayushman Bharat Digital Mission)',
+                    desc: 'Unified health interface for patient records',
+                    link: 'https://abdm.gov.in/abdm'
+                },
+                reasoning: 'CONTRARIAN: Everyone pushes MERN/MEAN stack. Laravel is 3x faster to build MVPs with - auth, ORM, queues, cron jobs all built-in. Shared hosting costs ₹800/month vs ₹5K+ for Node.js setups. Perfect for non-tech founders bootstrapping.',
+                redFlag: '⚠️ PHP has perception issues with tech hiring. Scaling beyond 50K concurrent users becomes challenging. Modern JS developers may resist joining the team.',
+                costBreakdown: [
+                    { item: 'DigitalOcean Droplet (4GB RAM)', cost: '₹2,400' },
+                    { item: 'MySQL Managed Database', cost: '₹1,200' },
+                    { item: 'Razorpay (2% + ₹3/txn)', cost: '₹3,000' },
+                    { item: 'SSL (Let\'s Encrypt)', cost: '₹0' },
+                    { item: 'Domain', cost: '₹500' },
+                    { item: 'Total Monthly', cost: '₹7,100' }
+                ],
+                reference: {
+                    startup: 'Practo (Initial Phase)',
+                    link: 'https://github.com/practo',
+                    insight: 'Started with PHP/MySQL before migrating to microservices. Served 10M+ users on monolith for 3 years'
+                },
+                scaling: [
+                    { stage: '0-10K users', desc: 'Single droplet handles everything' },
+                    { stage: '10K-50K users', desc: 'Add Redis cache, scale vertically to 8GB droplet' },
+                    { stage: '50K-200K users', desc: 'Migrate to AWS/GCP, introduce load balancer' },
+                    { stage: '200K+ users', desc: 'Break into microservices, re-platform to Node/Go' }
+                ],
+                whyNot: {
+                    rejected: 'MERN Stack',
+                    reason: 'Requires DevOps knowledge from day 1. Laravel handles 90% of boilerplate. You can build telemedicine MVP in 3 weeks vs 8 weeks with MERN.'
+                },
+                alternative: {
+                    stack: 'Django + PostgreSQL',
+                    reason: 'Python ecosystem great for ML features later, but slower development than Laravel'
+                }
+            },
+            {
+                id: 4,
+                condition: {
+                    stage: 'growth',
+                    budget: 'medium',
+                    sector: 'healthtech'
+                },
+                contrarian: false,
+                confidence: 88,
+                stack: {
+                    frontend: { name: 'Next.js + TypeScript', desc: 'SEO-optimized SSR' },
+                    backend: { name: 'Node.js (Express) + Python (FastAPI)', desc: 'Hybrid for ML workloads' },
+                    database: { name: 'PostgreSQL + MongoDB', desc: 'Structured + unstructured data' },
+                    hosting: { name: 'AWS (Mumbai) + CloudFront', desc: 'Low-latency India access' },
+                    auth: { name: 'Cognito + Aadhaar eKYC', desc: 'Patient identity verification' },
+                    payments: { name: 'Razorpay + Instamojo', desc: 'Multi-gateway redundancy' }
+                },
+                indiaIntegration: {
+                    name: 'ABDM Health Locker',
+                    desc: 'Store patient health records in ABDM-compliant format',
+                    link: 'https://sandbox.abdm.gov.in/'
+                },
+                reasoning: 'Healthtech at growth stage needs ML for diagnostics (FastAPI for Python models) and robust patient management (Express for CRUD). PostgreSQL for prescriptions, MongoDB for medical images/reports. ABDM integration is becoming mandatory for govt partnerships.',
+                redFlag: '⚠️ HIPAA-equivalent compliance in India (Digital Personal Data Protection Act) requires dedicated security team. Data breaches can result in ₹250 crore fines. Medical data residency laws are evolving rapidly.',
+                costBreakdown: [
+                    { item: 'AWS (EC2, RDS, S3)', cost: '₹45,000' },
+                    { item: 'MongoDB Atlas', cost: '₹8,000' },
+                    { item: 'Razorpay (1.9% + ₹3/txn)', cost: '₹12,000' },
+                    { item: 'SSL + CloudFront CDN', cost: '₹5,000' },
+                    { item: 'Compliance & Security Audit', cost: '₹15,000' },
+                    { item: 'Total Monthly', cost: '₹85,000' }
+                ],
+                reference: {
+                    startup: 'MFine',
+                    link: 'https://www.mfine.co/technology',
+                    insight: 'Uses AWS + ML pipelines for symptom analysis. ABDM integration helped them partner with state governments'
+                },
+                scaling: [
+                    { stage: 'Current (50K consultations/mo)', desc: 'Current stack handles load well' },
+                    { stage: '200K consultations/mo', desc: 'Add Kubernetes, separate ML cluster' },
+                    { stage: '500K+ consultations/mo', desc: 'Multi-region for tier-2 cities, edge computing for diagnostics' },
+                    { stage: '1M+ consultations/mo', desc: 'Dedicated data science team, custom DICOM viewers' }
+                ],
+                whyNot: {
+                    rejected: 'Full Python (Django) Stack',
+                    reason: 'Django admin is great but Node.js ecosystem has better real-time capabilities for telemedicine (WebRTC, Socket.io). Hybrid approach leverages both.'
+                },
+                alternative: {
+                    stack: 'Supabase + Next.js + Python ML Service',
+                    reason: 'Open-source, cheaper than AWS, but less mature for healthcare compliance'
+                }
+            },
+            {
+                id: 5,
+                condition: {
+                    stage: 'mvp',
+                    budget: 'low',
+                    sector: 'edtech'
+                },
+                contrarian: false,
+                confidence: 85,
+                stack: {
+                    frontend: { name: 'React + Vite', desc: 'Fast dev builds, modern tooling' },
+                    backend: { name: 'Supabase (PostgreSQL + Auth + Storage)', desc: 'Open-source Firebase alternative' },
+                    database: { name: 'Supabase PostgreSQL', desc: 'Relational data for courses/users' },
+                    hosting: { name: 'Vercel (Frontend) + Supabase (Backend)', desc: 'Zero-config deployments' },
+                    auth: { name: 'Supabase Auth + Google SSO', desc: 'Student login via Gmail' },
+                    payments: { name: 'Razorpay + UPI AutoPay', desc: 'Subscription courses' }
+                },
+                indiaIntegration: {
+                    name: 'DigiLocker for Certificate Verification',
+                    desc: 'Issue govt-recognized digital certificates',
+                    link: 'https://www.digilocker.gov.in/'
+                },
+                reasoning: 'Supabase is perfect for edtech MVPs - built-in auth, real-time subscriptions for collaborative learning, and PostgreSQL for structured course data. Vercel handles frontend scaling automatically. Total time to production: 2-3 weeks.',
+                redFlag: '⚠️ Supabase is still young (launched 2020). Enterprise support is limited. Video streaming needs external service (Mux/Cloudflare Stream) which adds cost.',
+                costBreakdown: [
+                    { item: 'Supabase Pro Plan', cost: '₹2,000' },
+                    { item: 'Vercel Pro (for team features)', cost: '₹1,600' },
+                    { item: 'Razorpay (2% + ₹3/txn)', cost: '₹4,000' },
+                    { item: 'Video Hosting (Mux/Cloudflare)', cost: '₹8,000' },
+                    { item: 'Domain + SSL', cost: '₹500' },
+                    { item: 'Total Monthly', cost: '₹16,100' }
+                ],
+                reference: {
+                    startup: 'Scaler Academy',
+                    link: 'https://www.scaler.com/engineering-blog/',
+                    insight: 'Initially used Firebase, migrated to PostgreSQL for complex course analytics. Kept Firebase Auth for simplicity'
+                },
+                scaling: [
+                    { stage: '0-5K students', desc: 'Supabase free tier sufficient' },
+                    { stage: '5K-50K students', desc: 'Upgrade to Pro, add CDN for videos' },
+                    { stage: '50K-200K students', desc: 'Self-host Supabase on AWS, dedicated database' },
+                    { stage: '200K+ students', desc: 'Custom LMS platform, microservices for assessments' }
+                ],
+                whyNot: {
+                    rejected: 'WordPress + LearnDash',
+                    reason: 'Good for non-technical founders but limited customization. Modern learners expect mobile-first, interactive experiences that WordPress plugins can\'t deliver.'
+                },
+                alternative: {
+                    stack: 'Firebase + Next.js',
+                    reason: 'More mature than Supabase, better documentation, but vendor lock-in concerns'
+                }
+            },
+            {
+                id: 6,
+                condition: {
+                    stage: 'scale',
+                    budget: 'high',
+                    sector: 'edtech'
+                },
+                contrarian: false,
+                confidence: 94,
+                stack: {
+                    frontend: { name: 'React Native (Mobile) + Next.js (Web)', desc: 'Cross-platform consistency' },
+                    backend: { name: 'Go (Golang) Microservices', desc: 'High concurrency for live classes' },
+                    database: { name: 'PostgreSQL (Primary) + Cassandra (Analytics)', desc: 'SQL + NoSQL hybrid' },
+                    hosting: { name: 'AWS + Kubernetes (EKS)', desc: 'Auto-scaling for exam peaks' },
+                    auth: { name: 'Keycloak + OAuth 2.0', desc: 'Open-source identity management' },
+                    payments: { name: 'Razorpay Subscriptions + International Gateway', desc: 'Global student base' }
+                },
+                indiaIntegration: {
+                    name: 'NPTEL API Integration',
+                    desc: 'Access govt course content, credit transfer',
+                    link: 'https://nptel.ac.in/'
+                },
+                reasoning: 'Scale-stage edtech (100K+ concurrent users) needs Go for handling WebRTC (live classes), Cassandra for storing billions of student activity events, and Kubernetes for exam-day traffic spikes (10x normal load). React Native ensures mobile-first experience.',
+                redFlag: '⚠️ Infrastructure costs ₹5L+/month minimum. Requires 5+ DevOps engineers. Kubernetes learning curve is steep - expect 3-6 months for team upskilling. Overkill for <100K students.',
+                costBreakdown: [
+                    { item: 'AWS (EKS, RDS, S3, CloudFront)', cost: '₹3,50,000' },
+                    { item: 'Cassandra Cluster (Self-hosted)', cost: '₹80,000' },
+                    { item: 'Video Infrastructure (Agora/Twilio)', cost: '₹1,20,000' },
+                    { item: 'Razorpay (1.5% + ₹3/txn)', cost: '₹40,000' },
+                    { item: 'Monitoring & Logging', cost: '₹25,000' },
+                    { item: 'Total Monthly', cost: '₹6,15,000' }
+                ],
+                reference: {
+                    startup: 'BYJU\'S',
+                    link: 'https://www.byju.com/careers/engineering/',
+                    insight: 'Handles 150M+ users with Go microservices + Cassandra. Kubernetes manages exam-day spikes of 5M concurrent users'
+                },
+                scaling: [
+                    { stage: 'Current (500K+ students)', desc: 'Multi-region deployment, 99.99% uptime SLA' },
+                    { stage: '1M+ students', desc: 'Edge computing for video delivery, ML for personalization' },
+                    { stage: '5M+ students', desc: 'Custom CDN, blockchain certificates, AI tutors' },
+                    { stage: '10M+ students', desc: 'Global infrastructure, compliance for 15+ countries' }
+                ],
+                whyNot: {
+                    rejected: 'Node.js Microservices',
+                    reason: 'Node is single-threaded. Go handles 100K+ concurrent WebSocket connections with lower memory. For live classes with video, Go is 3-4x more efficient.'
+                },
+                alternative: {
+                    stack: 'Elixir (Phoenix) + PostgreSQL',
+                    reason: 'Better real-time capabilities than Go, but smaller talent pool in India'
+                }
+            },
+            {
+                id: 7,
+                condition: {
+                    stage: 'mvp',
+                    budget: 'medium',
+                    sector: 'saas'
+                },
+                contrarian: false,
+                confidence: 90,
+                stack: {
+                    frontend: { name: 'Next.js 14 (App Router)', desc: 'SEO + React Server Components' },
+                    backend: { name: 'Next.js API Routes + tRPC', desc: 'Type-safe full-stack' },
+                    database: { name: 'PlanetScale (MySQL)', desc: 'Serverless DB with branching' },
+                    hosting: { name: 'Vercel (All-in-one)', desc: 'Edge functions globally' },
+                    auth: { name: 'Clerk.dev', desc: 'Beautiful auth UI, multi-tenancy' },
+                    payments: { name: 'Stripe + Razorpay (Dual Gateway)', desc: 'International + Indian customers' }
+                },
+                indiaIntegration: {
+                    name: 'GST Invoicing API (ClearTax)',
+                    desc: 'Auto-generate GST-compliant invoices',
+                    link: 'https://cleartax.in/s/gst-invoicing-api'
+                },
+                reasoning: 'Modern SaaS stack - Next.js 14 with server components reduces client JS by 40%. tRPC gives end-to-end type safety without GraphQL complexity. PlanetScale branching lets you test schema changes like Git. Clerk handles B2B multi-tenancy out of the box.',
+                redFlag: '⚠️ Vercel costs scale with traffic - can hit ₹50K-₹1L/month at 100K monthly visitors. PlanetScale free tier limits database size to 5GB. Migration to self-hosted later is complex.',
+                costBreakdown: [
+                    { item: 'Vercel Pro', cost: '₹1,600' },
+                    { item: 'PlanetScale Scaler Plan', cost: '₹2,400' },
+                    { item: 'Clerk Pro', cost: '₹2,000' },
+                    { item: 'Stripe (2.9% + 30¢) + Razorpay', cost: '₹8,000' },
+                    { item: 'Email (Resend/Postmark)', cost: '₹1,000' },
+                    { item: 'Total Monthly', cost: '₹15,000' }
+                ],
+                reference: {
+                    startup: 'Cal.com',
+                    link: 'https://github.com/calcom/cal.com',
+                    insight: 'Open-source SaaS built with Next.js + Prisma + PlanetScale. Handles 1M+ bookings/month on this exact stack'
+                },
+                scaling: [
+                    { stage: '0-10K users', desc: 'Vercel hobby/pro tier handles everything' },
+                    { stage: '10K-100K users', desc: 'Upgrade to Enterprise, add Redis cache' },
+                    { stage: '100K-500K users', desc: 'Migrate to self-hosted Next.js on AWS/Fly.io' },
+                    { stage: '500K+ users', desc: 'Microservices for background jobs, dedicated DB cluster' }
+                ],
+                whyNot: {
+                    rejected: 'MERN Stack',
+                    reason: 'MERN requires separate frontend/backend deployments. Next.js API routes give you full-stack in one codebase with better DX. Server components reduce client bundle by 40%.'
+                },
+                alternative: {
+                    stack: 'Remix + Fly.io + PostgreSQL',
+                    reason: 'Better for global edge deployment, but smaller ecosystem than Next.js'
+                }
+            },
+            {
+                id: 8,
+                condition: {
+                    stage: 'growth',
+                    budget: 'high',
+                    sector: 'saas'
+                },
+                contrarian: false,
+                confidence: 91,
+                stack: {
+                    frontend: { name: 'React + TypeScript + Vite', desc: 'Monorepo with Turborepo' },
+                    backend: { name: 'Node.js (NestJS) + GraphQL', desc: 'API-first architecture' },
+                    database: { name: 'PostgreSQL (Aurora) + Redis + Elasticsearch', desc: 'Polyglot persistence' },
+                    hosting: { name: 'AWS (Multi-AZ) + CloudFront', desc: 'High availability setup' },
+                    auth: { name: 'Auth0 Enterprise + SAML SSO', desc: 'Enterprise customer compliance' },
+                    payments: { name: 'Stripe Billing + Chargebee', desc: 'Complex pricing models' }
+                },
+                indiaIntegration: {
+                    name: 'Zoho Books API (Accounting)',
+                    desc: 'Auto-sync revenue for Indian accounting standards',
+                    link: 'https://www.zoho.com/books/api/v3/'
+                },
+                reasoning: 'Growth-stage SaaS selling to enterprises needs SAML SSO (Auth0), complex billing (Chargebee handles usage-based/seat-based/hybrid), and audit logs (Elasticsearch). GraphQL lets mobile and web clients fetch exactly what they need. Monorepo keeps code DRY across products.',
+                redFlag: '⚠️ GraphQL adds complexity - requires dedicated team for schema management. Chargebee costs $300-500/month. Aurora is 3x more expensive than regular RDS. Only justified when ARR > $1M.',
+                costBreakdown: [
+                    { item: 'AWS (Aurora, EC2, CloudFront)', cost: '₹1,80,000' },
+                    { item: 'Elasticsearch (AWS OpenSearch)', cost: '₹40,000' },
+                    { item: 'Auth0 Enterprise', cost: '₹35,000' },
+                    { item: 'Chargebee Growth Plan', cost: '₹25,000' },
+                    { item: 'Monitoring + APM', cost: '₹20,000' },
+                    { item: 'Total Monthly', cost: '₹3,00,000' }
+                ],
+                reference: {
+                    startup: 'Freshworks',
+                    link: 'https://www.freshworks.com/company/engineering/',
+                    insight: 'Uses GraphQL + PostgreSQL + Redis for multi-product suite. Handles 50K+ enterprise customers with this architecture'
+                },
+                scaling: [
+                    { stage: 'Current (10K+ customers)', desc: 'Multi-tenant with data isolation per customer' },
+                    { stage: '50K customers', desc: 'Sharding by customer region, dedicated VPC per large client' },
+                    { stage: '100K+ customers', desc: 'Edge functions for global performance, ML-powered support' },
+                    { stage: '500K+ customers', desc: 'Multi-cloud (AWS + GCP), blockchain audit trail' }
+                ],
+                whyNot: {
+                    rejected: 'Serverless (Lambda) Everything',
+                    reason: 'Cold starts hurt UX for enterprise dashboards. WebSockets for real-time features don\'t work well with Lambda. Hybrid approach (EC2 for APIs, Lambda for background jobs) is optimal.'
+                },
+                alternative: {
+                    stack: 'Supabase + Next.js + PostgreSQL',
+                    reason: 'Much cheaper (~₹50K/month), but lacks enterprise features like SAML SSO, audit logs, compliance certifications'
+                }
+            },
+            {
+                id: 9,
+                condition: {
+                    stage: 'mvp',
+                    budget: 'low',
+                    sector: 'ecommerce'
+                },
+                contrarian: false,
+                confidence: 82,
+                stack: {
+                    frontend: { name: 'Shopify Liquid Templates', desc: 'Pre-built e-commerce UI' },
+                    backend: { name: 'Shopify APIs + Webhooks', desc: 'Headless CMS approach' },
+                    database: { name: 'Shopify (Managed)', desc: 'Zero database management' },
+                    hosting: { name: 'Shopify CDN', desc: 'Global edge network included' },
+                    auth: { name: 'Shopify Customer Accounts', desc: 'Built-in user management' },
+                    payments: { name: 'Razorpay + COD', desc: 'UPI, cards, cash-on-delivery' }
+                },
+                indiaIntegration: {
+                    name: 'Shiprocket for Logistics',
+                    desc: 'Multi-courier integration with COD support',
+                    link: 'https://www.shiprocket.in/'
+                },
+                reasoning: 'For product-based businesses, Shopify eliminates 80% of development work. Integrated inventory, orders, customers, analytics. Razorpay plugin for Indian payments. Shiprocket handles 20+ couriers. Time to launch: 1 week vs 3 months for custom build.',
+                redFlag: '⚠️ Transaction fees: Shopify (2%) + Razorpay (2%) = 4% per sale. Custom checkout requires Shopify Plus (₹2L/month). Limited backend customization without apps.',
+                costBreakdown: [
+                    { item: 'Shopify Basic Plan', cost: '₹1,999' },
+                    { item: 'Razorpay (2% + ₹3/txn)', cost: '₹8,000' },
+                    { item: 'Shiprocket (₹25/shipment)', cost: '₹5,000' },
+                    { item: 'Shopify Apps (Reviews, SEO)', cost: '₹2,000' },
+                    { item: 'Domain', cost: '₹500' },
+                    { item: 'Total Monthly', cost: '₹17,499' }
+                ],
+                reference: {
+                    startup: 'Bombay Shaving Company',
+                    link: 'https://bombayshavingcompany.com/',
+                    insight: 'Started on Shopify, scaled to ₹100 crore revenue before moving to custom headless stack'
+                },
+                scaling: [
+                    { stage: '0-1K orders/mo', desc: 'Shopify Basic handles everything' },
+                    { stage: '1K-10K orders/mo', desc: 'Upgrade to Shopify Advanced for better rates' },
+                    { stage: '10K-50K orders/mo', desc: 'Shopify Plus for custom checkout, wholesale' },
+                    { stage: '50K+ orders/mo', desc: 'Migrate to headless (Next.js + Shopify backend API)' }
+                ],
+                whyNot: {
+                    rejected: 'WooCommerce (WordPress)',
+                    reason: 'Cheaper upfront but hidden costs in hosting, security, plugins. Shopify is production-ready out of the box. WooCommerce needs constant maintenance.'
+                },
+                alternative: {
+                    stack: 'Medusa.js (Headless E-commerce) + Next.js',
+                    reason: 'Open-source, no transaction fees, but requires technical expertise'
+                }
+            },
+            {
+                id: 10,
+                condition: {
+                    stage: 'scale',
+                    budget: 'high',
+                    sector: 'ecommerce'
+                },
+                contrarian: false,
+                confidence: 89,
+                stack: {
+                    frontend: { name: 'Next.js (Storefront) + React Native (Mobile)', desc: 'Omnichannel experience' },
+                    backend: { name: 'Node.js (Microservices) + Kafka', desc: 'Event-driven architecture' },
+                    database: { name: 'PostgreSQL + MongoDB + Redis + Elasticsearch', desc: 'Purpose-built databases' },
+                    hosting: { name: 'AWS + Cloudflare (DDoS Protection)', desc: 'Sale day traffic handling' },
+                    auth: { name: 'Custom Auth + Social Login', desc: 'Phone OTP primary' },
+                    payments: { name: 'Razorpay + Paytm + PhonePe + COD', desc: 'Payment redundancy' }
+                },
+                indiaIntegration: {
+                    name: 'ONDC (Open Network for Digital Commerce)',
+                    desc: 'List on govt e-commerce network',
+                    link: 'https://ondc.org/'
+                },
+                reasoning: 'Scale e-commerce (1M+ orders/month) needs microservices for inventory, orders, payments, recommendations. Kafka for real-time inventory sync across warehouses. Elasticsearch for product search with typo tolerance. Multiple payment gateways for 99.9% uptime.',
+                redFlag: '⚠️ Infrastructure costs ₹8L-₹15L/month. Requires 20+ engineers (backend, mobile, DevOps, data). Kafka learning curve is steep. Only justified at ₹100+ crore annual GMV.',
+                costBreakdown: [
+                    { item: 'AWS (EC2, RDS, S3, CloudFront)', cost: '₹5,00,000' },
+                    { item: 'Kafka Cluster (MSK)', cost: '₹1,20,000' },
+                    { item: 'Elasticsearch (OpenSearch)', cost: '₹80,000' },
+                    { item: 'Cloudflare Enterprise', cost: '₹1,50,000' },
+                    { item: 'Payment Gateways (1.5-2%)', cost: '₹2,00,000' },
+                    { item: 'Total Monthly', cost: '₹10,50,000' }
+                ],
+                reference: {
+                    startup: 'Meesho',
+                    link: 'https://www.meesho.io/tech',
+                    insight: 'Uses Kafka + microservices to handle 5M+ daily orders. Zero downtime during sales with auto-scaling on AWS'
+                },
+                scaling: [
+                    { stage: 'Current (1M orders/mo)', desc: 'Multi-region for faster delivery' },
+                    { stage: '5M orders/mo', desc: 'ML recommendation engine, predictive inventory' },
+                    { stage: '10M+ orders/mo', desc: 'Custom warehouse management, drone delivery pilots' },
+                    { stage: '50M+ orders/mo', desc: 'Global expansion, blockchain for supply chain' }
+                ],
+                whyNot: {
+                    rejected: 'Magento/Adobe Commerce',
+                    reason: 'Expensive licensing (₹2L-₹5L/month), PHP-based legacy code. Modern stack gives better mobile performance and developer experience.'
+                },
+                alternative: {
+                    stack: 'Shopify Plus + Headless',
+                    reason: 'Faster to market, lower DevOps burden, but 2% transaction fee hurts at scale'
+                }
+            },
+            {
+                id: 11,
+                condition: {
+                    stage: 'mvp',
+                    budget: 'medium',
+                    sector: 'ai'
+                },
+                contrarian: false,
+                confidence: 86,
+                stack: {
+                    frontend: { name: 'Next.js + Tailwind CSS', desc: 'Rapid UI development' },
+                    backend: { name: 'Python (FastAPI) + Celery', desc: 'Async ML inference' },
+                    database: { name: 'PostgreSQL + Pinecone/Weaviate', desc: 'Vector embeddings storage' },
+                    hosting: { name: 'Modal.com (Serverless GPU)', desc: 'Pay-per-inference model' },
+                    auth: { name: 'Supabase Auth + API Keys', desc: 'Developer API access' },
+                    payments: { name: 'Stripe + Usage-based billing', desc: 'API credits system' }
+                },
+                indiaIntegration: {
+                    name: 'Bhashini API (Indic Language NLP)',
+                    desc: '12 Indian languages translation/TTS',
+                    link: 'https://bhashini.gov.in/ulca'
+                },
+                reasoning: 'AI startups need GPU access without upfront costs. Modal.com lets you run ML models serverless - pay only when API is called. FastAPI handles async inference. Pinecone for semantic search over embeddings. Stripe usage-based billing tracks API calls automatically.',
+                redFlag: '⚠️ Modal.com pricing scales fast (₹50-₹100 per GPU hour). OpenAI API costs can be ₹20K-₹1L/month. Vector DB costs grow with data. Budget 30-40% margin for AI API costs.',
+                costBreakdown: [
+                    { item: 'Vercel Pro', cost: '₹1,600' },
+                    { item: 'Modal.com (Serverless GPU)', cost: '₹25,000' },
+                    { item: 'OpenAI API (GPT-4)', cost: '₹30,000' },
+                    { item: 'Pinecone Pro', cost: '₹8,000' },
+                    { item: 'Supabase Pro', cost: '₹2,000' },
+                    { item: 'Total Monthly', cost: '₹66,600' }
+                ],
+                reference: {
+                    startup: 'Krutrim AI',
+                    link: 'https://olakrutrim.com/',
+                    insight: 'Indian LLM using Modal-like infrastructure for GPU scaling. Custom training on Indic datasets'
+                },
+                scaling: [
+                    { stage: '0-10K API calls/mo', desc: 'Serverless GPU sufficient, low fixed costs' },
+                    { stage: '10K-100K calls/mo', desc: 'Dedicated GPU instance, cache popular requests' },
+                    { stage: '100K-1M calls/mo', desc: 'Fine-tune smaller models, edge deployment for low-latency' },
+                    { stage: '1M+ calls/mo', desc: 'Custom model hosting, multi-region GPU clusters' }
+                ],
+                whyNot: {
+                    rejected: 'Self-hosted GPUs on AWS',
+                    reason: 'AWS GPU instances (p3.2xlarge) cost ₹3L/month 24/7. At MVP stage, you might use GPU 10% of time. Serverless saves 90% costs.'
+                },
+                alternative: {
+                    stack: 'Replicate + Supabase + Next.js',
+                    reason: 'Easier than Modal, good for stable diffusion/image models, but less flexible for custom ML'
+                }
+            },
+            {
+                id: 12,
+                condition: {
+                    stage: 'growth',
+                    budget: 'high',
+                    sector: 'ai'
+                },
+                contrarian: false,
+                confidence: 88,
+                stack: {
+                    frontend: { name: 'React + WebAssembly (Rust)', desc: 'Client-side ML for privacy' },
+                    backend: { name: 'Python (Ray) + FastAPI + GPU Cluster', desc: 'Distributed ML training' },
+                    database: { name: 'PostgreSQL + Qdrant (Vector DB) + S3', desc: 'Training data lake' },
+                    hosting: { name: 'AWS (GPU instances) + Lambda@Edge', desc: 'Hybrid compute' },
+                    auth: { name: 'Custom Auth + Rate Limiting', desc: 'Prevent API abuse' },
+                    payments: { name: 'Stripe + Volume-based pricing', desc: 'Enterprise contracts' }
+                },
+                indiaIntegration: {
+                    name: 'NDHM Integration (Healthcare AI)',
+                    desc: 'Access patient data with consent for diagnostics',
+                    link: 'https://ndhm.gov.in/'
+                },
+                reasoning: 'Growth-stage AI needs custom model training (Ray for distributed), vector DB for semantic search (Qdrant is faster than Pinecone for self-hosted), and WebAssembly for running lightweight models in-browser (privacy-first). GPU clusters for batch training.',
+                redFlag: '⚠️ GPU clusters cost ₹5L-₹10L/month. ML engineers are expensive (₹30L-₹50L/year). Model training can take weeks. Data labeling costs ₹50-₹200/hour. Budget 40% of runway for ML ops.',
+                costBreakdown: [
+                    { item: 'AWS GPU Cluster (p3.8xlarge x4)', cost: '₹6,00,000' },
+                    { item: 'Qdrant Cloud (Self-hosted)', cost: '₹40,000' },
+                    { item: 'S3 + Data Transfer', cost: '₹80,000' },
+                    { item: 'OpenAI/Anthropic API (Fine-tuning)', cost: '₹1,20,000' },
+                    { item: 'Monitoring + MLOps Tools', cost: '₹60,000' },
+                    { item: 'Total Monthly', cost: '₹9,00,000' }
+                ],
+                reference: {
+                    startup: 'Sarvam AI',
+                    link: 'https://www.sarvam.ai/',
+                    insight: 'Building Indic language models using GPU clusters + Ray. Focus on low-resource languages like Kannada, Malayalam'
+                },
+                scaling: [
+                    { stage: 'Current (Custom models)', desc: 'GPU cluster for training, API for inference' },
+                    { stage: 'Enterprise customers', desc: 'On-premise deployment option, dedicated instances' },
+                    { stage: 'Global expansion', desc: 'Multi-region GPU, edge inference for <100ms latency' },
+                    { stage: 'Industry leader', desc: 'Custom silicon (TPUs), research partnerships' }
+                ],
+                whyNot: {
+                    rejected: 'All OpenAI/Anthropic API',
+                    reason: 'Can\'t differentiate if you\'re just wrapping OpenAI. Custom models (even smaller ones) give competitive moat. Fine-tuning on domain data improves accuracy 20-40%.'
+                },
+                alternative: {
+                    stack: 'Hugging Face Inference Endpoints + Supabase',
+                    reason: 'Managed ML deployment, cheaper than AWS GPUs, but less control over infrastructure'
+                }
+            }
+        ];
+
+        // Default fallback recommendation
+        const defaultStack = {
+            id: 0,
+            contrarian: false,
+            confidence: 70,
+            stack: {
+                frontend: { name: 'React + Vite', desc: 'Modern, fast development' },
+                backend: { name: 'Node.js (Express)', desc: 'JavaScript everywhere' },
+                database: { name: 'PostgreSQL', desc: 'Reliable relational database' },
+                hosting: { name: 'DigitalOcean', desc: 'Simple, affordable hosting' },
+                auth: { name: 'JWT + Passport.js', desc: 'Standard auth approach' },
+                payments: { name: 'Razorpay', desc: 'Indian payment integration' }
+            },
+            indiaIntegration: {
+                name: 'Generic API Integration',
+                desc: 'Sector-specific integration needed',
+                link: '#'
+            },
+            reasoning: 'Standard full-stack JavaScript setup. Works for most use cases but not optimized for your specific needs. Consider more specialized stack for production.',
+            redFlag: '⚠️ Generic stack - not optimized for your sector and stage. Review sector-specific requirements.',
+            costBreakdown: [
+                { item: 'DigitalOcean Droplet', cost: '₹2,400' },
+                { item: 'Razorpay (2%)', cost: '₹5,000' },
+                { item: 'Domain + SSL', cost: '₹500' },
+                { item: 'Total Monthly', cost: '₹7,900' }
+            ],
+            reference: {
+                startup: 'Various Startups',
+                link: '#',
+                insight: 'Common stack across many industries'
+            },
+            scaling: [
+                { stage: 'MVP', desc: 'Start with monolith' },
+                { stage: 'Growth', desc: 'Add caching, CDN' },
+                { stage: 'Scale', desc: 'Consider microservices' }
+            ],
+            whyNot: {
+                rejected: 'Other stacks',
+                reason: 'Need more specific requirements to recommend alternatives'
+            },
+            alternative: {
+                stack: 'Full-stack framework (Next.js/Remix)',
+                reason: 'Better developer experience for rapid iteration'
+            }
+        };
+
+        function findRecommendation(stage, budget, sector) {
+            // Find exact match first
+            let match = stackDatabase.find(stack => 
+                stack.condition.stage === stage &&
+                stack.condition.budget === budget &&
+                stack.condition.sector === sector
+            );
+
+            // If no exact match, try stage + sector match
+            if (!match) {
+                match = stackDatabase.find(stack => 
+                    stack.condition.stage === stage &&
+                    stack.condition.sector === sector
+                );
+            }
+
+            // If still no match, try sector match
+            if (!match) {
+                match = stackDatabase.find(stack => 
+                    stack.condition.sector === sector
+                );
+            }
+
+            return match || defaultStack;
+        }
+
+        function generateRecommendation() {
+            const stage = document.getElementById('stage').value;
+            const team = document.getElementById('team').value;
+            const budget = document.getElementById('budget').value;
+            const sector = document.getElementById('sector').value;
+
+            const recommendation = findRecommendation(stage, budget, sector);
+            renderResults(recommendation, { stage, team, budget, sector });
+
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function renderResults(rec, inputs) {
+            const resultsSection = document.getElementById('results');
+            
+            const html = `
+                <div class="results-header">
+                    <div>
+                        <h2 style="font-size: 1.8rem; margin-bottom: 0.5rem;">
+                            ${getStageName(inputs.stage)} ${getSectorName(inputs.sector)} Stack
+                        </h2>
+                        <p style="color: var(--text-muted);">
+                            Team: ${getTeamName(inputs.team)} | Budget: ${getBudgetName(inputs.budget)}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        ${rec.contrarian ? '<div class="contrarian-badge">⚡ CONTRARIAN CHOICE</div>' : ''}
+                        <div class="confidence-badge">
+                            <span class="confidence-score">${rec.confidence}%</span>
+                            <span style="color: var(--text-muted);">Confidence</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reasoning-box">
+                    <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        💡 Why This Stack?
+                    </h3>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        ${rec.reasoning}
+                    </p>
+                </div>
+
+                <h3 class="section-title">🔧 Recommended Tech Stack</h3>
+                <div class="grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🎨</span>
+                            <h4 class="card-title">Frontend</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-item">
+                                <div class="tech-name">${rec.stack.frontend.name}</div>
+                                <div class="tech-desc">${rec.stack.frontend.desc}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">⚙️</span>
+                            <h4 class="card-title">Backend</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-item">
+                                <div class="tech-name">${rec.stack.backend.name}</div>
+                                <div class="tech-desc">${rec.stack.backend.desc}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🗄️</span>
+                            <h4 class="card-title">Database</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-item">
+                                <div class="tech-name">${rec.stack.database.name}</div>
+                                <div class="tech-desc">${rec.stack.database.desc}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">☁️</span>
+                            <h4 class="card-title">Hosting</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-item">
+                                <div class="tech-name">${rec.stack.hosting.name}</div>
+                                <div class="tech-desc">${rec.stack.hosting.desc}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🔐</span>
+                            <h4 class="card-title">Authentication</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-item">
+                                <div class="tech-name">${rec.stack.auth.name}</div>
+                                <div class="tech-desc">${rec.stack.auth.desc}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">💳</span>
+                            <h4 class="card-title">Payments</h4>
+                        </div>
+                        <div class="card-content">
+                            <div class="tech-item">
+                                <div class="tech-name">${rec.stack.payments.name}</div>
+                                <div class="tech-desc">${rec.stack.payments.desc}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-warning">
+                    <div class="alert-title">🇮🇳 India-Specific Integration</div>
+                    <div style="margin-top: 0.75rem;">
+                        <strong style="color: var(--accent);">${rec.indiaIntegration.name}</strong>
+                        <p style="margin-top: 0.5rem; color: var(--text-secondary);">
+                            ${rec.indiaIntegration.desc}
+                        </p>
+                        <a href="${rec.indiaIntegration.link}" target="_blank" class="reference-link" style="margin-top: 0.5rem; display: inline-block;">
+                            📚 View Documentation →
+                        </a>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger">
+                    <div class="alert-title">🚨 Red Flag / Constraint</div>
+                    <p style="margin-top: 0.75rem; color: var(--text-secondary); line-height: 1.7;">
+                        ${rec.redFlag}
+                    </p>
+                </div>
+
+                <div class="cost-breakdown">
+                    <h3 style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        💰 Cost Breakdown (Monthly in INR)
+                    </h3>
+                    ${rec.costBreakdown.map(item => `
+                        <div class="cost-item">
+                            <span style="color: var(--text-secondary);">${item.item}</span>
+                            <span style="font-weight: 600; color: ${item.item.includes('Total') ? 'var(--accent)' : 'var(--text-primary)'};">
+                                ${item.cost}
+                            </span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="reference-card">
+                    <h3 style="margin-bottom: 1rem;">🏢 Real Startup Reference</h3>
+                    <div class="reference-startup">${rec.reference.startup}</div>
+                    <a href="${rec.reference.link}" target="_blank" class="reference-link">
+                        🔗 Source Link
+                    </a>
+                    <div class="reference-insight">
+                        "${rec.reference.insight}"
+                    </div>
+                </div>
+
+                <div class="cost-breakdown">
+                    <h3 style="margin-bottom: 1.5rem;">🚀 Scaling Path</h3>
+                    <div class="timeline">
+                        ${rec.scaling.map(item => `
+                            <div class="timeline-item">
+                                <div class="timeline-stage">${item.stage}</div>
+                                <div class="timeline-desc">${item.desc}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div class="alternative-section">
+                    <h3 style="margin-bottom: 1rem;">🤔 Why NOT ${rec.whyNot.rejected}?</h3>
+                    <p style="color: var(--text-secondary); line-height: 1.7; margin-bottom: 1.5rem;">
+                        ${rec.whyNot.reason}
+                    </p>
+                    <h4 style="margin-bottom: 0.5rem; color: var(--primary);">💡 Alternative Stack</h4>
+                    <p style="color: var(--text-secondary);">
+                        <strong>${rec.alternative.stack}</strong> — ${rec.alternative.reason}
+                    </p>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-copy" onclick="copyReport()">
+                        📋 Copy Full Report
+                    </button>
+                    <button class="btn-secondary" onclick="generateRecommendation()">
+                        🔄 Generate Another
+                    </button>
+                </div>
+            `;
+
+            resultsSection.innerHTML = html;
+            resultsSection.style.display = 'block';
+        }
+
+        function copyReport() {
+            const resultsSection = document.getElementById('results');
+            const text = resultsSection.innerText;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✅ Report copied to clipboard!');
+            }).catch(err => {
+                showToast('❌ Failed to copy report');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        function resetForm() {
+            document.getElementById('stage').selectedIndex = 0;
+            document.getElementById('team').selectedIndex = 0;
+            document.getElementById('budget').selectedIndex = 0;
+            document.getElementById('sector').selectedIndex = 0;
+            
+            const resultsSection = document.getElementById('results');
+            resultsSection.style.display = 'none';
+        }
+
+        function getStageName(stage) {
+            const stages = {
+                'idea': '💡 Idea Stage',
+                'mvp': '🛠️ MVP',
+                'growth': '📈 Growth',
+                'scale': '🌍 Scale'
+            };
+            return stages[stage] || stage;
+        }
+
+        function getTeamName(team) {
+            const teams = {
+                'solo': '1-5 people',
+                'medium': '6-15 people',
+                'large': '15+ people'
+            };
+            return teams[team] || team;
+        }
+
+        function getBudgetName(budget) {
+            const budgets = {
+                'low': '₹5K-₹25K',
+                'medium': '₹25K-₹1L',
+                'high': '₹1L+'
+            };
+            return budgets[budget] || budget;
+        }
+
+        function getSectorName(sector) {
+            const sectors = {
+                'fintech': 'Fintech',
+                'healthtech': 'Healthtech',
+                'edtech': 'Edtech',
+                'saas': 'SaaS',
+                'ecommerce': 'E-commerce',
+                'ai': 'AI/ML'
+            };
+            return sectors[sector] || sector;
+        }
+    </script>
+</body>
+</html>
